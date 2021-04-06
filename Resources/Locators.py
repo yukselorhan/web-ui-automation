@@ -18,13 +18,16 @@ class Locators():
     CLOSE_BUTTON2=(By.CSS_SELECTOR,'#modal-root > div > div > div.modal-close')
     SCROLLUP_BUTTON=(By.CSS_SELECTOR,'#scrollToUp > div > div')
     BOUTIQUE_TABS="//*[@id='navigation-wrapper']/nav/ul/li"
-    COMPONENT_ITEM='component-item'
-    UNLOADED_BOUTIQUE=(By.XPATH, "//span[@class='image-container']//img[@alt='']")
-
+    COMPONENT_ITEM="component-item"
+    COMPONENT_BIG_LIST="//div[@class='component-list component-big-list']//article[@class='component-item']"
+    UNLOADED_BOUTIQUE=(By.XPATH, "//span[@class='image-container']//img[@src='https://cdn.dsmcdn.com//web/production/small_boutique_placeholder.jpg']")
+    ABOUT_US= "//a[@href='/international.html']"
+    TAB_CONTROL= "//li[@class='tab-link']"
 
     # --- Product Details Page Locators ---
-    PRODUCT_ITEM='p-card-img'
-    ADD_TO_BASKET_BUTTON=(By.CSS_SELECTOR, "#product-detail-app > div > div.pr-cn > div.pr-cn-in > div.pr-in-at > div.prc-inf-wrp > div > button")
+    PRODUCT_ITEM= "//div[@class='boutique-product']"
+    OTHER_PRODUCT_ITEM="//div[@class='p-card-wrppr']"
+    ADD_TO_BASKET_BUTTON=(By.XPATH, "//button[@class='pr-in-btn add-to-bs']")
     
     
     

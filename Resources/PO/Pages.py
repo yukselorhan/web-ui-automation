@@ -13,8 +13,6 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver import ChromeOptions, Chrome
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotInteractableException
-import os, sys, inspect
-
 
 import os, sys, inspect
 # fetch path to the directory in which current file is, from root directory or C:\ (or whatever driver number it is)
@@ -23,8 +21,6 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 # insert path to the folder from parent directory from which the python module/ file is to be imported
 sys.path.insert(0, parentdir)
-
-
 
 from Resources.Locators import Locators
 from Resources.TestData import TestData
@@ -67,12 +63,12 @@ class BasePage():
     def hover_to(self, by_locator):
         element = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(by_locator))
         ActionChains(self.driver).move_to_element(element).perform()
-        
+
+
 class HomePage(BasePage):
     """Home Page of Trendyol"""
     def __init__(self, driver):
         super().__init__(driver)
-
 
     def goSignIn(self):
         self.click(Locators.CLOSE_BUTTON)
@@ -84,42 +80,60 @@ class SignInPage(BasePage):
     def __init__(self, driver):
         super().__init__(driver)
     
-
-    def login(self):
+    def login(self,driver):
         self.enter_text(Locators.EMAIL_INPUT, TestData.username) 
         self.enter_text(Locators.LOGIN_PASSWORD_INPUT, TestData.password)
         self.click(Locators.LOGIN_BUTTON)
-        if not Locators.MY_ACCOUNT_BUTTON: 
-           print("Could not login!")
+
+        try:
+            driver.find_element_by_xpath(Locators.MY_ACCOUNT_BUTTON)
+            
+                   
+        except NoSuchElementException:
+             print("Could not login!")
+        
+
 
 class BoutiqueListPage(BasePage):
     """Boutique List Page of Trendyol"""
     def __init__(self, driver):
         super().__init__(driver)
         
-
     def controlBoutique(self, driver):
-
-        time.sleep(2)
+        scroll_pause_time = 1 # You can set your own pause time. My laptop is a bit slow so I use 1 sec
+        screen_height = driver.execute_script("return window.screen.height;")   # get the screen height of the web
+        WebDriverWait(driver,delay).until(EC.element_to_be_clickable((By.XPATH, Locators.TAB_CONTROL)))
         self.click(Locators.CLOSE_BUTTON2)
+        element=driver.find_elements_by_xpath(Locators.TAB_CONTROL)
+        tab_count=len(element)
 
-        for i in range(1,10):            
-            WebDriverWait(driver,delay).until(EC.element_to_be_clickable((By.XPATH, Locators.BOUTIQUE_TABS+str([i])))).click()
+        for j in range(1,tab_count): 
+            i = 1
+            WebDriverWait(driver,delay).until(EC.element_to_be_clickable((By.XPATH, Locators.TAB_CONTROL)))
 
-            time.sleep(5)
-            for k in range(1,70): 
-                webdriver.ActionChains(driver).send_keys(Keys.SPACE).perform()
-                time.sleep(0.8)
+            WebDriverWait(driver,delay).until(EC.element_to_be_clickable((By.XPATH, Locators.BOUTIQUE_TABS+str([j])))).click()
+            WebDriverWait(driver,delay).until(EC.element_to_be_clickable((By.XPATH, Locators.TAB_CONTROL)))
+
+            
+            while True:
+                # scroll one screen height each time
+                driver.execute_script("window.scrollTo(0, {screen_height}*{i});".format(screen_height=screen_height, i=i))  
+                i += 1
+                time.sleep(scroll_pause_time)
+                # update scroll height each time after scrolled, as the scroll height can change after we scrolled the page
+                scroll_height = driver.execute_script("return document.body.scrollHeight;")  
+                # Break the loop when the height we need to scroll to is larger than the total scroll height
+                if (screen_height) * i > scroll_height:
+                    break
+            
+            unloaded_boutique = WebDriverWait(driver,delay).until(EC.presence_of_all_elements_located((By.XPATH, "//span[@class='image-container']//img[@src='https://cdn.dsmcdn.com//web/production/small_boutique_placeholder.jpg']")))
+            unloaded_boutique_len = len(unloaded_boutique)
+            print("unloaded boutique img count: ", unloaded_boutique_len)
+            boutique_class = driver.find_elements_by_class_name(Locators.COMPONENT_ITEM)
+            boutique_len = len(boutique_class)
+            print("boutique count: ",boutique_len)
+            self.click(Locators.SCROLLUP_BUTTON) 
         
-        unloaded_imgs = driver.find_elements_by_xpath(Locators.UNLOADED_BOUTIQUE) 
-        unloaded_boutique_len = len(unloaded_imgs)
-        print("unloaded boutique img", unloaded_boutique_len)
-
-        boutique_class = driver.find_elements_by_class_name(Locators.COMPONENT_ITEM)
-        boutique_len = len(boutique_class)
-        print("boutique count: ",boutique_len)
-        
-        self.click(Locators.SCROLLUP_BUTTON) 
 
 class ProductDetailsPage(BasePage):
     """Product Details Page for the clicked product on Trendyol"""
@@ -128,21 +142,25 @@ class ProductDetailsPage(BasePage):
 
     def clickRandomBoutique(self, driver):
         time.sleep(2)
-        i = randint(1,10)
+        i = randint(1,3)
 
         # Rastgele bir sekmeye gidiyor
-        WebDriverWait(driver,delay).until(EC.element_to_be_clickable((By.XPATH, Locators.BOUTIQUE_TABS+str([i])))).click()
-    
-        # Rastgele bir butiğe gidiyor
-        self.click(Locators.COMPONENT_ITEM)
+        #WebDriverWait(driver,delay).until(EC.element_to_be_clickable((By.XPATH, Locators.BOUTIQUE_TABS + '['+str(i)+']'))).click()
+        element = driver.find_element_by_xpath(Locators.BOUTIQUE_TABS + f'[{str(i)}]')
+        element.click()
+        # Rastgele bir büyük butiğe gidiyor  
+        
+        self.click(Locators.COMPONENT_BIG_LIST + f'[{str(i)}]') 
+        
     
         #Rastgele bir ürün seçiyor
-        element_list = driver.find_elements_by_class_name(Locators.PRODUCT_ITEM)
-        #j = randint(1,len(element_list))  
-        time.sleep(1)
-        j = randint(1,3)
-        element = driver.find_element_by_xpath('//*[@id="search-app"]/div/div/div[2]/div[2]/div/div['+str(j)+']/div[1]/a/div[1]/div/img')
-        element.click()
-
+        try:
+            driver.find_element_by_xpath(Locators.PRODUCT_ITEM + f'[{str(i)}]').click()
+                   
+        except NoSuchElementException:
+            driver.find_element_by_xpath(Locators.OTHER_PRODUCT_ITEM + f'[{str(i)}]').click()
+        
+  
         #ürünü sepete ekliyor
         self.click(Locators.ADD_TO_BASKET_BUTTON)
+        time.sleep(4)

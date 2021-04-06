@@ -9,7 +9,7 @@ from Resources.PO.Pages import BasePage, HomePage, SignInPage, BoutiqueListPage,
 
 
 #Base Class for the tests
-class Test_Base(unittest.TestCase):
+class Test_Base(unittest.TestCase): #Testbase classının içinde unittest.TestCase yazıyor bunun sebebi unittest in TestCase classını extend
 
     def setUp(self):
         self.driver = webdriver.Chrome()
@@ -32,7 +32,7 @@ class Test_Trendyol_Search(Test_Base):
     def test_home_page_loaded_successfully(self):
         # instantiate an object of HomePage class. Remember when the constructor of HomePage class is called
         # it opens up the browser and navigates to Home Page of the site under test.
-        self.homePage=HomePage(self.driver)
+        self.homePage=HomePage(self.driver)  #classı variablea setliyoruz her seferinde yeni instance oluştutmamak için 
         self.homePage.goSignIn()
         # assert if the title of Home Page contains Trendyol
         self.assertIn(TestData.HOME_PAGE_TITLE, self.homePage.driver.title)
